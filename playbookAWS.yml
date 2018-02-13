@@ -1,0 +1,62 @@
+---
+- hosts:
+    - main
+    - test
+
+  vars: 
+    packages:
+      - git
+      - default-jdk
+      - maven
+      - mysql-server-5.7
+      - python-mysqldb
+      - chromium-chromedriver
+
+  tasks: 
+    - name: Install packages
+      become: yes
+      apt: 
+        pkg: "{{ item }}"
+        state: present
+        update_cache: yes
+      with_items: "{{ packages }}"
+
+- hosts: main
+
+  vars:
+    mysql_password: "{{ lookup('env','MYSQL_PASS') }}"
+
+  tasks:
+    - name: Clone Onboarding
+      git:
+        repo: 'git@github.ncsu.edu:engr-csc326-staff/Onboarding.git'
+        dest: /home/ubuntu/coffeemaker
+        accept_hostkey: yes
+        clone: yes
+        update: no
+        key_file: /home/ubuntu/id_rsa
+
+    - name: Add hibernate.cfg.xml
+      template:
+        src: /Users/akshitpatel/Desktop/School/CSC519/HW1.2/templates/hibernate.cfg.xml
+        dest: /home/ubuntu/coffeemaker/CoffeeMaker/src/main/resources/hibernate.cfg.xml
+        mode: 0644
+
+    - name: Add my.cnf for mysql
+      template:
+        src: /Users/akshitpatel/Desktop/School/CSC519/HW1.2/templates/my.cnf
+        dest: /home/ubuntu/coffeemaker/CoffeeMaker/src/main/resources/.my.cnf
+        mode: 0644
+
+    - name: Add mysql user
+      mysql_user:
+        name: root
+        password: "{{ mysql_password }}"
+        priv: '*.*:ALL'
+        login_user: root
+        login_password: "{{ mysql_password }}"
+        state: present
+      become: yes
+
+    - name: Run Coffeemaker
+      command: mvn -f /home/ubuntu/coffeemaker/CoffeeMaker/ spring-boot:run
