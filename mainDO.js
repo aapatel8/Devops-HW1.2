@@ -9,6 +9,7 @@ var fs = require('fs');
 
 var config = {};
 config.token = process.env.DOTOKEN;
+config.sshKeyId = process.env.DOSSHID;
 console.log("Your token is:", config.token);
 
 var headers =
@@ -31,7 +32,7 @@ var client =
 			"size":"512mb",
 			"image":imageName,
 			// Id to ssh_key already associated with account.
-			"ssh_keys":[18020481],
+			"ssh_keys":[config.sshKeyId],
 			//"ssh_keys":null,
 			"backups":false,
 			"ipv6":false,
