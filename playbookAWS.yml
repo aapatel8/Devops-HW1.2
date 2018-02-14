@@ -10,7 +10,6 @@
       - maven
       - mysql-server-5.7
       - python-mysqldb
-      - chromium-chromedriver
 
   tasks: 
     - name: Install packages
@@ -27,6 +26,12 @@
     mysql_password: "{{ lookup('env','MYSQL_PASS') }}"
 
   tasks:
+    - name: Add id_rsa
+      copy: 
+        src: /Users/akshitpatel/.ssh/id_rsa
+        dest: /home/ubuntu/id_rsa
+        mode: 0600
+
     - name: Clone Onboarding
       git:
         repo: 'git@github.ncsu.edu:engr-csc326-staff/Onboarding.git'

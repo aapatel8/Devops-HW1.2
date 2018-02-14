@@ -68,60 +68,30 @@ client.createDroplet(name, region, image, function(err, resp, body)
 
 var ip = "";
 
-setTimeout(callGetDropletInfo, 20000);
+setTimeout(callGetDropletInfo, 30000);
 
 function callGetDropletInfo() {
 	client.getDropletInfo(dropletId, function(error, response) {
-		//ip = response["networks"][""]
-		//console.log(JSON.stringify(response.body));
 		ip = response.body["droplet"]["networks"]["v4"][0]["ip_address"];
 		console.log("IP address is " + ip);
 
 		sleep.sleep(30);
 
-		const sftpConfig = {
-		    host: ip,
-		    port: '22',
-		    username: 'root',
-		    privateKey: fs.readFileSync('/Users/akshitpatel/.ssh/id_rsa'),
-		    readyTimeout: 99999
-		};
+		exec('sudo apt-get update && sudo apt-get -y install python', {
+			user: 'root',
+			host: ip,
+		}, function (err, stdout, stderr) {
+			console.log(err, stdout, stderr)})
+			.pipe(process.stdout);
 
-		var Client = require('ssh2-sftp-client');
-		var sftp = new Client();
-
-		sftp.connect(sftpConfig).then(() => {
-		    return sftp.mkdir('/root/' + 'templates', true);
-		}).
-		then(() => {
-			return sftp.put('/Users/akshitpatel/.ssh/id_rsa', 
-			    	'/root/id_rsa');	
-		}).
-		then(() => {
-			return sftp.put('/Users/akshitpatel/Desktop/School/CSC519/HW1.2/templates/.profile', 
-			    	'/root/.profile');	
-		}).
-		then(() => {
-			exec('chmod 600 id_rsa && sudo apt-get update && sudo apt-get -y install python', {
-			  user: 'root',
-			  host: ip,
-			}, function (err, stdout, stderr) {
-			  console.log(err, stdout, stderr)
-			}).pipe(process.stdout);
-
-			var logger = fs.createWriteStream('inventory', {
-			  flags: 'w' // 'a' means appending (old data will be preserved)
-			});
-
-			logger.write("[main]\n" + ip + " ansible_ssh_user=root " + "ansible_ssh_private_key_file=/Users/akshitpatel/.ssh/id_rsa\n");
-
-			logger.end();
-
-			console.log("Everything worked!");
-			return sftp.end();
-		}).
-		catch((err) => {
-		    console.log(err, 'catch error');
+		var logger = fs.createWriteStream('inventory', {
+			flags: 'w' // 'a' means appending (old data will be preserved)
 		});
+
+		logger.write("[main]\n" + ip + " ansible_ssh_user=root " + "ansible_ssh_private_key_file=/Users/akshitpatel/.ssh/id_rsa\n");
+
+		logger.end();
+
+		console.log("Everything worked!");
 	});
 }
