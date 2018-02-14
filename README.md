@@ -1,7 +1,8 @@
 # CSC519-HW1.2
 
 * mainDO.js - nodejs script to create/setup Digital Ocean instance
-	* CHANGE - the ssh_key id passed in when creating a droplet is now an environment variable and no longer hardcoded.
+	* CHANGE (not in demo) - the ssh_key id passed in when creating a droplet is now an environment variable and no 
+	 longer hardcoded
 * mainAWS.js - nodejs script to create/setup AWS instance
 * playbookDO.yml - ansible playbook to configure Digital Ocean instance to run Coffeemaker
 * playbookAWS.yml - ansible playbook to configure AWS to run Coffeemaker
